@@ -8,5 +8,4 @@ FROM ubuntu:latest
 WORKDIR /app
 COPY --from=build /app/build/source/BigFilesSorter .
 COPY resources/data.txt /app/resources/data.txt
-COPY resources/out.txt /app/resources/out.txt
 ENTRYPOINT ["./BigFilesSorter"]

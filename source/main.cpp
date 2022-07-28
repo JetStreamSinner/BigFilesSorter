@@ -7,13 +7,14 @@
 #include <algorithm>
 
 int main(int argc, char *argv[]) {
-    std::filesystem::path resources = "/home/jetstream/Dev/Work/BigFilesSorter/resources/";
+    std::filesystem::path resources = "resources/";
 
-    std::string source_filename = "temp.txt";
+    std::string source_filename = "data.txt";
     std::filesystem::path source = resources.string() + source_filename;
 
     std::fstream file(source.c_str(), std::ios::in);
     if (!file.is_open()) {
+        std::cerr << "Cannot open file for reading data" << std::endl;
         return 1;
     }
     std::istream_iterator<int> source_fwd(file);
@@ -37,17 +38,16 @@ int main(int argc, char *argv[]) {
 
     std::string out_filename = "out.txt";
     std::filesystem::path out = resources.string() + out_filename;
-    std::fstream out_file(out, std::ios::out);
+    std::fstream out_file(out, std::ios::out | std::ios::trunc);
     if (!out_file.is_open()) {
+        std::cerr << "Cannot open file for writing sorted data" << std::endl;
         return 1;
     }
 
     std::cout << "Start saving" << std::endl;
     const auto start_writing_time = std::chrono::system_clock::now().time_since_epoch();
-
     std::ostream_iterator<int> out_fwd(out_file, " ");
     std::copy(buffer.begin(), buffer.end(), out_fwd);
-
     const auto end_writing_time = std::chrono::system_clock::now().time_since_epoch();
     std::cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::seconds>(end_writing_time - start_writing_time).count() << std::endl;
     std::cout << "Done" << std::endl;

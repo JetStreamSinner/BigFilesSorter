@@ -30,10 +30,9 @@ void merge(InputIterator first1, InputIterator last1, InputIterator first2, Inpu
 
 template<typename InputIterator, typename OutputIterator>
 void merge(InputIterator first1, InputIterator last1, InputIterator first2, InputIterator last2, OutputIterator out) {
-    auto default_pred = std::greater<typename InputIterator::value_type>();
     merge(std::forward<InputIterator>(first1), std::forward<InputIterator>(last1),
-            std::forward<InputIterator>(first2), std::forward<InputIterator>(last2),
-                    std::forward<OutputIterator>(out), default_pred);
+          std::forward<InputIterator>(first2), std::forward<InputIterator>(last2),
+          std::forward<OutputIterator>(out), std::greater<typename InputIterator::value_type>());
 }
 
 }

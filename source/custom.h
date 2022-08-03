@@ -118,17 +118,15 @@ namespace custom {
             chunks_info.emplace_back(std::move(chunk_file));
         });
 
-        const std::size_t chunk_size = bytes_restriction / chunks_info.size();
-        std::vector<std::size_t> proxy_buffer;
-        std::for_each(chunks_info.begin(), chunks_info.end(), [&proxy_buffer, chunk_size](std::fstream &chunk_file) {
-            std::istream_iterator<std::size_t> iter(chunk_file);
-            std::vector<std::size_t> chunk_data = get_chunk(iter, chunk_size);
-            std::move(chunk_data.begin(), chunk_data.end(), std::back_inserter(proxy_buffer));
+        std::vector<Range<std::istream_iterator<std::size_t>>> chunks_iterators;
+        std::for_each(chunks_info.begin(), chunks_info.end(), [&chunks_iterators](std::fstream &stream) {
+            std::istream_iterator<std::size_t> forwarder(stream);
+            std::istream_iterator<std::size_t> end;
+            chunks_iterators.push_back({forwarder, end});
         });
 
-        std::sort(proxy_buffer.begin(), proxy_buffer.end());
         std::ostream_iterator<std::size_t> handled_iterator(sorted_file, " ");
-        std::move(proxy_buffer.begin(), proxy_buffer.end(), handled_iterator);
+        merge_n(chunks_iterators, handled_iterator);
     }
 
     void external_sort(const std::filesystem::path &path, std::size_t bytes_restriction) {

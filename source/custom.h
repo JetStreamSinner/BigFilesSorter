@@ -75,7 +75,7 @@ namespace custom {
         return std::move(chunk_data);
     }
 
-    std::vector<std::string> split_source_in_chunks(const std::filesystem::path &path, std::size_t bytes_in_chunk) {
+    std::vector<std::string> split_source_in_chunks(const std::filesystem::path &path, const std::filesystem::path &temp_directory, std::size_t bytes_in_chunk) {
         if (bytes_in_chunk <= 0) {
             throw std::runtime_error("Bad chunk size");
         }
@@ -85,13 +85,10 @@ namespace custom {
             throw std::runtime_error("Cannot open source file");
         }
 
-        const std::filesystem::path temp_directory = "tmp/";
-        std::filesystem::create_directory(temp_directory);
-
         std::istream_iterator<std::size_t> forwarder(file);
         std::istream_iterator<std::size_t> end;
 
-        std::vector<std::string> chunks_meta;
+        std::vector<std::string> chunks_names;
         for (std::size_t chunk_index = 0; forwarder != end; ++chunk_index) {
             auto next_chunk = get_chunk(forwarder, bytes_in_chunk);
             const std::filesystem::path chunk_file_name = temp_directory.string() + std::to_string(chunk_index);
@@ -99,13 +96,13 @@ namespace custom {
             std::ostream_iterator<std::size_t> chunk_file_iterator(chunk_file, " ");
             std::sort(next_chunk.begin(), next_chunk.end());
             std::move(next_chunk.begin(), next_chunk.end(), chunk_file_iterator);
-            chunks_meta.emplace_back(chunk_file_name);
+            chunks_names.emplace_back(chunk_file_name);
         }
-        // std::filesystem::remove_all(temp_directory);
-        return std::move(chunks_meta);
+        return std::move(chunks_names);
     }
 
-    void partially_sort(const std::vector<std::string> &chunks_filenames, std::size_t bytes_restriction) {
+    template<typename Container>
+    void partially_sort(Container &&chunks_filenames) {
         const std::filesystem::path sorted_path = "resources/handled.txt";
         std::fstream sorted_file(sorted_path, std::fstream::out);
         if (!sorted_file.is_open()) {
@@ -130,8 +127,13 @@ namespace custom {
     }
 
     void external_sort(const std::filesystem::path &path, std::size_t bytes_restriction) {
-        const auto meta = custom::split_source_in_chunks(path, bytes_restriction);
-        partially_sort(meta, bytes_restriction);
+        const std::filesystem::path temp_directory = "tmp/";
+        std::filesystem::create_directory(temp_directory);
+
+        auto meta = custom::split_source_in_chunks(path, temp_directory, bytes_restriction);
+        partially_sort(std::move(meta));
+
+        std::filesystem::remove_all(temp_directory);
     }
 
 }// namespace custom

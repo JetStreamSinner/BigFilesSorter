@@ -27,7 +27,8 @@ namespace custom {
             *out = *min_range->start;
 
             min_range->start = std::next(min_range->start);
-            if (min_range->start == min_range->end) {
+            const bool range_done = min_range->start == min_range->end;
+            if (range_done) {
                 containers.erase(min_range);
             }
             out++;

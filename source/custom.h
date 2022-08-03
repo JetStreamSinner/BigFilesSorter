@@ -1,10 +1,12 @@
 #pragma once
+
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include "directory_guard.h"
 
 namespace custom {
 
@@ -128,12 +130,10 @@ namespace custom {
 
     void external_sort(const std::filesystem::path &path, std::size_t bytes_restriction) {
         const std::filesystem::path temp_directory = "tmp/";
-        std::filesystem::create_directory(temp_directory);
+        DirectoryGuard temp_dir_guard(temp_directory);
 
-        auto meta = custom::split_source_in_chunks(path, temp_directory, bytes_restriction);
+        auto meta = custom::split_source_in_chunks(path, temp_dir_guard.directory(), bytes_restriction);
         partially_sort(std::move(meta));
-
-        std::filesystem::remove_all(temp_directory);
     }
 
 }// namespace custom

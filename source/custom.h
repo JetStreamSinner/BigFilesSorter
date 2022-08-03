@@ -1,10 +1,10 @@
 #pragma once
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <vector>
-#include <filesystem>
 
 namespace custom {
 
@@ -21,12 +21,15 @@ namespace custom {
         };
 
         while (!std::all_of(containers.begin(), containers.end(), iteration_over)) {
-             auto min_range = std::min_element(containers.begin(), containers.end(), [](Range<It> &first, Range<It> &second) {
+            auto min_range = std::min_element(containers.begin(), containers.end(), [](Range<It> &first, Range<It> &second) {
                 return *first.start < *second.start;
             });
             *out = *min_range->start;
 
             min_range->start = std::next(min_range->start);
+            if (min_range->start == min_range->end) {
+                containers.erase(min_range);
+            }
             out++;
         }
     }
